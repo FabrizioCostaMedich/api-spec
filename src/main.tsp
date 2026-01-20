@@ -17,6 +17,7 @@ import "./routes/tickets.tsp";
 import "./routes/job-offers.tsp";
 import "./routes/offering.tsp";
 import "./routes/surveys.tsp";
+import "./routes/faculty/calendar.tsp";
 
 import "./version.tsp";
 
