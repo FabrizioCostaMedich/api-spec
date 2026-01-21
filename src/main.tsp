@@ -19,6 +19,7 @@ import "./routes/offering.tsp";
 import "./routes/surveys.tsp";
 import "./routes/faculty/calendar.tsp";
 import "./routes/faculty/courses.tsp";
+import "./routes/faculty/digital-signature.tsp";
 
 import "./version.tsp";
 
