@@ -2,6 +2,7 @@ import "@typespec/http";
 import "@typespec/openapi3";
 
 import "../../common.tsp";
+import "../../examples/faculty/calendar.tsp";
 
 using Http;
 
@@ -140,6 +141,7 @@ model FacultyPaginatedCalendarEventList {
 interface FacultyCalendars {
   @get
   @summary("List available calendars | Elenca calendari disponibili")
+  @opExample(_ex_listFacultyCalendars_resp)
   listFacultyCalendars(): OkDataResponse<FacultyCalendar[]> | BaseErrors;
 
   @get
@@ -156,6 +158,7 @@ interface FacultyCalendars {
   @get
   @route("/{calendarId}")
   @summary("Calendar detail with events | Dettaglio calendario ed eventi")
+  @opExample(_ex_getFacultyCalendar_resp)
   getFacultyCalendar(
     @path calendarId: string,
   ): OkDataResponse<FacultyCalendarDetail> | NotFound | BaseErrors;

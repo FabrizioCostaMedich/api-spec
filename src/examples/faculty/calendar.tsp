@@ -1,3 +1,9 @@
+import "@typespec/http";
+
+using Http;
+
+namespace PolitoAPI;
+
 const _ex_listFacultyCalendars_resp = #{
   returnType: #{
     statusCode: 200,
@@ -42,7 +48,7 @@ const _ex_getFacultyCalendar_resp = #{
             id: "evt_12345",
             calendarId: "teaching",
             title: "Lezione Analisi Matematica I",
-            type: "LECTURE",
+            type: FacultyCalendarEventTypeEnum.LECTURE,
             startDate: utcDateTime.fromISO("2023-12-18T14:00:00.000Z"),
             endDate: utcDateTime.fromISO("2023-12-18T15:30:00.000Z"),
             allDay: false,
@@ -66,7 +72,7 @@ const _ex_facultyCalendarEvent = #{
   id: "evt_12345",
   calendarId: "personal",
   title: "Brainstorming for new Activities",
-  type: "MEETING",
+  type: FacultyCalendarEventTypeEnum.MEETING,
   startDate: utcDateTime.fromISO("2023-12-18T14:00:00.000Z"),
   endDate: utcDateTime.fromISO("2023-12-18T15:30:00.000Z"),
   allDay: false,
@@ -84,7 +90,7 @@ const _ex_facultyCalendarEvent = #{
       id: "MAT-2023-001",
       name: "Slides Introduzione",
       url: "https://didattica.polito.it/materials/intro.pdf",
-      type: "file",
+      type: FacultyCalendarMaterialType.file,
     },
   ],
   notes: "Portare il materiale per il laboratorio.",

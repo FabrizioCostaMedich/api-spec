@@ -1,3 +1,9 @@
+import "@typespec/http";
+
+using Http;
+
+namespace PolitoAPI;
+
 const _ex_getFacultyCourses_resp = #{
   returnType: #{
     statusCode: 200,

@@ -2,6 +2,7 @@ import "@typespec/http";
 import "@typespec/openapi3";
 
 import "../../common.tsp";
+import "../../examples/faculty/signature.tsp";
 
 using Http;
 
@@ -51,6 +52,7 @@ interface FacultyDigitalSignature {
   @get
   @route("/documents")
   @summary("List documents to sign | Elenco documenti da firmare")
+  @opExample(_ex_listFacultySignableDocuments_resp)
   listFacultySignableDocuments(
     /** Filtra per stato del documento. */
     @query status?: FacultySignableDocumentStatus,
@@ -59,6 +61,7 @@ interface FacultyDigitalSignature {
   @post
   @route("/documents/{documentId}/sign")
   @summary("Start digital signature | Avvia firma digitale")
+  @opExample(_ex_signFacultyDocument_resp)
   signFacultyDocument(
     @path documentId: string,
     @body body?: FacultySignDocumentRequest,
