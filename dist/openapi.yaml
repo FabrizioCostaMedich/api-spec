@@ -7,19 +7,28 @@ info:
     url: https://creativecommons.org/licenses/by-nc/4.0/
 tags:
   - name: Auth
-  - name: Student
   - name: Bookings
   - name: Courses
-  - name: Lectures
-  - name: Exams
-  - name: Esc
   - name: News
   - name: People
   - name: Places
+  - name: Lectures
+  - name: Student
+  - name: Exams
+  - name: Esc
   - name: Tickets
   - name: Job offers
   - name: Offering
   - name: Surveys
+  - name: Faculty - Calendar
+  - name: Faculty - Courses
+  - name: Faculty - Lectures
+  - name: Faculty - Digital Signature
+  - name: Faculty - Profile
+  - name: Faculty - Exams
+  - name: Faculty - Room Booking
+  - name: Faculty - Event Booking
+  - name: Faculty - Bookings
 paths:
   /auth/client:
     patch:
@@ -390,7 +399,7 @@ paths:
         - Auth
   /auth/switch-career:
     post:
-      operationId: Auth_switchCareer
+      operationId: StudentAuth_switchCareer
       summary: Switch career | Cambia carriera
       parameters: []
       responses:
@@ -1280,7 +1289,7 @@ paths:
         - Courses
   /deadlines:
     get:
-      operationId: StudentNs_getDeadlines
+      operationId: StudentProfileOperations_getDeadlines
       summary: List deadlines | Elenca scadenze
       parameters:
         - name: fromDate
@@ -1662,6 +1671,2208 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/RescheduleExamRequest'
+  /faculty/bookings:
+    get:
+      operationId: FacultyBookings_listFacultyBookings
+      summary: List my bookings | Elenca prenotazioni
+      parameters:
+        - name: dateFrom
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          explode: false
+        - name: dateTo
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FacultyBooking'
+                required:
+                  - data
+              example:
+                data:
+                  - id: booking_001
+                    roomId: ROOM_001
+                    roomName: Aula 1P
+                    date: '2024-03-15'
+                    startTime: '10:00'
+                    endTime: '12:00'
+                    reason: Lezione di recupero
+                    status: confirmed
+                  - id: booking_002
+                    roomId: LAB_001
+                    roomName: Laboratorio Informatica 1
+                    date: '2024-03-18'
+                    startTime: '14:00'
+                    endTime: '16:00'
+                    reason: Esercitazione pratica
+                    status: confirmed
+                  - id: booking_003
+                    date: '2024-03-20'
+                    startTime: '09:00'
+                    endTime: '13:00'
+                    reason: Workshop su Intelligenza Artificiale
+                    status: pending
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Bookings
+  /faculty/bookings/{bookingId}:
+    delete:
+      operationId: FacultyBookings_cancelFacultyBooking
+      summary: Cancel booking | Annulla prenotazione
+      parameters:
+        - name: bookingId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Bookings
+  /faculty/calendars:
+    get:
+      operationId: FacultyCalendars_listFacultyCalendars
+      summary: List available calendars | Elenca calendari disponibili
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FacultyCalendar'
+                required:
+                  - data
+              example:
+                data:
+                  - id: teaching
+                    name: Calendario didattico
+                    description: Eventi legati ai corsi e alle attività accademiche.
+                    color: '#1976D2'
+                    supportsEventCreation: false
+                    defaultVisible: true
+                  - id: personal
+                    name: Calendario personale
+                    description: Eventi personali del docente.
+                    color: '#FF5733'
+                    supportsEventCreation: true
+                    defaultVisible: false
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Calendar
+  /faculty/calendars/events:
+    get:
+      operationId: FacultyCalendars_listAllFacultyCalendarEvents
+      summary: List all events from all calendars | Elenca tutti gli eventi da tutti i calendari
+      parameters:
+        - name: calendarIds[]
+          in: query
+          required: false
+          description: Filtra per specifici calendari
+          schema:
+            type: array
+            items:
+              type: string
+        - name: fromDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          explode: false
+        - name: toDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FacultyCalendarEvent'
+                required:
+                  - data
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Calendar
+  /faculty/calendars/{calendarId}:
+    get:
+      operationId: FacultyCalendars_getFacultyCalendar
+      summary: Calendar detail with events | Dettaglio calendario ed eventi
+      parameters:
+        - name: calendarId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/FacultyCalendarDetail'
+                required:
+                  - data
+              example:
+                data:
+                  calendar:
+                    id: teaching
+                    name: Calendario didattico
+                    description: Eventi legati ai corsi e alle attività accademiche.
+                    color: '#1976D2'
+                    supportsEventCreation: false
+                    defaultVisible: true
+                  events:
+                    - id: evt_12345
+                      calendarId: teaching
+                      title: Lezione Analisi Matematica I
+                      type: LECTURE
+                      startDate: '2023-12-18T14:00:00.000Z'
+                      endDate: '2023-12-18T15:30:00.000Z'
+                      allDay: false
+                      place:
+                        buildingId: TO_CIT22
+                        floorId: XPTE
+                        roomId: '036'
+                        siteId: TO_CIT
+                        name: Aula 1P
+                      isLive: false
+                      notes: Portare il materiale per il laboratorio.
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Calendar
+  /faculty/calendars/{calendarId}/events:
+    get:
+      operationId: FacultyCalendars_listFacultyCalendarEvents
+      summary: List calendar events | Elenca eventi del calendario
+      parameters:
+        - name: calendarId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+          explode: false
+        - name: pageSize
+          in: query
+          required: false
+          schema:
+            type: integer
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FacultyPaginatedCalendarEventList'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Calendar
+    post:
+      operationId: FacultyCalendars_createFacultyCalendarEvent
+      summary: Create a new calendar event | Crea un nuovo evento nel calendario
+      parameters:
+        - name: calendarId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/FacultyCalendarEvent'
+                required:
+                  - data
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Calendar
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FacultyCalendarEventUpsertRequest'
+  /faculty/calendars/{calendarId}/events/{eventId}:
+    put:
+      operationId: FacultyCalendars_upsertFacultyCalendarEvent
+      summary: Create or update a calendar event | Crea o aggiorna un evento del calendario
+      parameters:
+        - name: calendarId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/FacultyCalendarEvent'
+                required:
+                  - data
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Calendar
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FacultyCalendarEventUpsertRequest'
+    delete:
+      operationId: FacultyCalendars_deleteFacultyCalendarEvent
+      summary: Delete a calendar event | Elimina un evento dal calendario
+      parameters:
+        - name: calendarId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Calendar
+  /faculty/courses:
+    get:
+      operationId: FacultyCourses_getFacultyCourses
+      summary: List courses | Elenca corsi docenti
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FacultyCourseOverview'
+                required:
+                  - data
+              example:
+                data:
+                  - id: 251007
+                    name: System and device programming
+                    shortcode: 01NYHOV
+                    cfu: 10
+                    teachingPeriod: 2-2
+                    teacherId: 2893
+                    previousEditions:
+                      - id: 251007
+                        year: '2024'
+                    isModule: false
+                    year: '2025'
+                  - id: 252121
+                    name: Web Applications II
+                    shortcode: 01TXSOV
+                    cfu: 6
+                    teachingPeriod: 2-2
+                    teacherId: 2235
+                    previousEditions: []
+                    isModule: false
+                    year: '2025'
+                  - id: 252138
+                    name: Information systems security
+                    shortcode: 01TYMOV
+                    cfu: 6
+                    teachingPeriod: 1-1
+                    teacherId: 1847
+                    previousEditions: []
+                    isModule: false
+                    year: '2025'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Courses
+  /faculty/courses/{courseId}:
+    get:
+      operationId: FacultyCourses_getFacultyCourse
+      summary: Course detail | Dettaglio corso
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/FacultyCourseOverview'
+                required:
+                  - data
+              example:
+                data:
+                  id: 251007
+                  name: System and device programming
+                  shortcode: 01NYHOV
+                  cfu: 10
+                  teachingPeriod: 2-2
+                  teacherId: 2893
+                  previousEditions:
+                    - id: 251007
+                      year: '2024'
+                  isModule: false
+                  year: '2025'
+                  moodleCourses:
+                    - id: '12345'
+                      name: SDP 2025
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Courses
+  /faculty/courses/{courseId}/assignments:
+    get:
+      operationId: FacultyCourses_listFacultyCourseAssignments
+      summary: List student assignments | Elenca elaborati caricati dagli studenti
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FacultyAssignmentSubmission'
+                required:
+                  - data
+              example:
+                data:
+                  - id: asn_001
+                    title: Laboratorio 1 - Thread e processi
+                    publishedAt: '2024-03-10T14:00:00Z'
+                    submittedBy: s123456
+                  - id: asn_002
+                    title: Laboratorio 2 - Sincronizzazione
+                    publishedAt: '2024-03-17T16:30:00Z'
+                    submittedBy: s234567
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Courses
+  /faculty/courses/{courseId}/assignments/{assignmentId}:
+    delete:
+      operationId: FacultyCourses_deleteFacultyCourseAssignment
+      summary: Delete student assignment | Rimuovi elaborato studente
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: assignmentId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Courses
+  /faculty/courses/{courseId}/collaborators:
+    get:
+      operationId: FacultyCourses_listFacultyCourseCollaborators
+      summary: List collaborators | Elenca collaboratori assegnati al corso
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FacultyCollaborator'
+                required:
+                  - data
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Courses
+    post:
+      operationId: FacultyCourses_addFacultyCourseCollaborator
+      summary: Add collaborator | Aggiungi collaboratore al corso
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/FacultyCollaborator'
+                required:
+                  - data
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Courses
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FacultyCollaboratorUpsertRequest'
+  /faculty/courses/{courseId}/collaborators/{collaboratorId}:
+    delete:
+      operationId: FacultyCourses_removeFacultyCourseCollaborator
+      summary: Remove collaborator | Rimuovi collaboratore dal corso
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: collaboratorId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Courses
+  /faculty/courses/{courseId}/collaborators/{collaboratorId}/permissions:
+    patch:
+      operationId: FacultyCourses_updateFacultyCourseCollaboratorPermissions
+      summary: Update collaborator permissions | Aggiorna permessi collaboratore
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: collaboratorId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/FacultyCollaborator'
+                required:
+                  - data
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Courses
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FacultyCollaboratorPermissionsRequest'
+  /faculty/courses/{courseId}/lectures:
+    get:
+      operationId: FacultyLectures_listFacultyLectures
+      summary: List lectures | Elenca lezioni del corso
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+          explode: false
+        - name: pageSize
+          in: query
+          required: false
+          schema:
+            type: integer
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FacultyPaginatedLectureList'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Lectures
+    post:
+      operationId: FacultyLectures_createFacultyLecture
+      summary: Create lecture | Crea una lezione
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/FacultyLecture'
+                required:
+                  - data
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Lectures
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FacultyLectureCreateRequest'
+  /faculty/courses/{courseId}/lectures/{lectureId}:
+    get:
+      operationId: FacultyLectures_getFacultyLecture
+      summary: Lecture detail | Dettaglio lezione
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: lectureId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/FacultyLecture'
+                required:
+                  - data
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Lectures
+    patch:
+      operationId: FacultyLectures_updateFacultyLecture
+      summary: Update lecture | Aggiorna una lezione
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: lectureId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/FacultyLecture'
+                required:
+                  - data
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Lectures
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FacultyLectureUpdateRequest'
+    delete:
+      operationId: FacultyLectures_deleteFacultyLecture
+      summary: Delete lecture | Elimina una lezione
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: lectureId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Lectures
+  /faculty/courses/{courseId}/students:
+    get:
+      operationId: FacultyCourses_listFacultyCourseStudents
+      summary: List enrolled students | Elenca studenti iscritti al corso
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FacultyCourseStudent'
+                required:
+                  - data
+              example:
+                data:
+                  - id: s123456
+                    firstName: Mario
+                    lastName: Rossi
+                    username: s123456
+                    picture:
+                      url: https://didattica.polito.it/photos/s123456.jpg
+                  - id: s234567
+                    firstName: Luigi
+                    lastName: Verdi
+                    username: s234567
+                    picture:
+                      url: https://didattica.polito.it/photos/s234567.jpg
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Courses
+  /faculty/deadlines:
+    get:
+      operationId: FacultyProfileOperations_getDeadlines
+      summary: List deadlines | Elenca scadenze
+      parameters:
+        - name: fromDate
+          in: query
+          required: false
+          description: First day - defaults to 7 days before today
+          schema:
+            type: string
+            format: date
+          explode: false
+        - name: toDate
+          in: query
+          required: false
+          description: Last day - defaults to 7 days after today
+          schema:
+            type: string
+            format: date
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Deadline'
+                required:
+                  - data
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Profile
+  /faculty/events/bookings:
+    post:
+      operationId: FacultyEventBookings_createFacultyEventBooking
+      summary: Book event space | Prenota spazio per evento
+      parameters: []
+      responses:
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Richiesta di prenotazione evento inviata con successo
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Event Booking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FacultyEventBookingRequest'
+            example:
+              startDateTime: '2024-03-15T10:00:00Z'
+              endDateTime: '2024-03-15T12:00:00Z'
+              expectedParticipants: 50
+              location: Aula Magna - Politecnico
+              reason: Workshop su Intelligenza Artificiale
+  /faculty/exams:
+    get:
+      operationId: FacultyExams_listFacultyExams
+      summary: List exams | Elenco appelli del docente
+      parameters:
+        - name: courseId
+          in: query
+          required: false
+          schema:
+            type: string
+          explode: false
+        - name: dateFrom
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          explode: false
+        - name: dateTo
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          explode: false
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+          explode: false
+        - name: pageSize
+          in: query
+          required: false
+          schema:
+            type: integer
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FacultyPaginatedExamList'
+              example:
+                data:
+                  - id: exam_001
+                    courseId: '251007'
+                    courseName: System and device programming
+                    date: '2024-02-15'
+                    room: Aula 1P
+                    enrolledCount: 45
+                  - id: exam_002
+                    courseId: '252121'
+                    courseName: Web Applications II
+                    date: '2024-02-20'
+                    room: Aula 2T
+                    enrolledCount: 32
+                  - id: exam_003
+                    courseId: '252138'
+                    courseName: Information systems security
+                    date: '2024-01-25'
+                    room: null
+                    enrolledCount: 28
+                page: 1
+                pageSize: 20
+                total: 3
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Exams
+  /faculty/exams/{examId}:
+    get:
+      operationId: FacultyExams_getFacultyExam
+      summary: Exam detail with enrollments | Dettaglio appello con iscritti
+      parameters:
+        - name: examId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/FacultyExam'
+                required:
+                  - data
+              example:
+                data:
+                  id: exam_001
+                  courseId: '251007'
+                  courseName: System and device programming
+                  date: '2024-02-15'
+                  room: Aula 1P
+                  enrolledCount: 45
+                  enrolled:
+                    - personId: s123456
+                      name: Mario Rossi
+                      degree: Ingegneria Informatica
+                      email: mario.rossi@studenti.polito.it
+                      note: null
+                    - personId: s234567
+                      name: Luigi Verdi
+                      degree: Ingegneria Informatica
+                      email: luigi.verdi@studenti.polito.it
+                      note: Studente lavoratore
+                    - personId: s345678
+                      name: Anna Bianchi
+                      degree: Ingegneria del Cinema
+                      email: anna.bianchi@studenti.polito.it
+                      note: null
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Exams
+  /faculty/exams/{examId}/enrollments:
+    post:
+      operationId: FacultyExams_addFacultyExamEnrollment
+      summary: Add student to exam | Aggiungi studente all'esame
+      parameters:
+        - name: examId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/FacultyExamEnrollment'
+                required:
+                  - data
+              example:
+                data:
+                  personId: s456789
+                  name: Giuseppe Neri
+                  degree: Ingegneria Informatica
+                  email: giuseppe.neri@studenti.polito.it
+                  note: Studente fuori corso
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Exams
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FacultyAddExamEnrollmentRequest'
+            example:
+              personId: s456789
+              note: Studente fuori corso
+  /faculty/exams/{examId}/notify:
+    post:
+      operationId: FacultyExams_notifyFacultyExamSubscribers
+      summary: Send notification to enrolled students | Invia comunicazione agli iscritti
+      parameters:
+        - name: examId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '202':
+          description: The request has been accepted for processing, but processing has not yet completed.
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Exams
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FacultyExamNotificationRequest'
+            example:
+              subject: Comunicazione appello
+              message: Si comunica che l'appello si svolgerà in Aula 1P alle ore 9:00. Presentarsi con documento di identità.
+              channels:
+                - push
+                - email
+  /faculty/guides:
+    get:
+      operationId: FacultyProfileOperations_getGuides
+      summary: Get guides | Mostra guide
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Guide'
+                required:
+                  - data
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Profile
+  /faculty/me:
+    get:
+      operationId: FacultyProfileRoutes_getFacultyProfile
+      summary: Get faculty profile | Profilo docente
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/FacultyProfile'
+                required:
+                  - data
+              example:
+                data:
+                  id: d123456
+                  name: Mario
+                  email: mario.rossi@polito.it
+                  phone: +39 011 090 7000
+                  residence: Via Roma 10, Torino
+                  fiscalResidence: Via Roma 10, Torino
+                  iban: IT60X0542811101000000123456
+                  department: DAUIN - Dipartimento di Automatica e Informatica
+                  publications:
+                    - id: pub_001
+                      name: Advanced Topics in Distributed Systems
+                    - id: pub_002
+                      name: Machine Learning for IoT Applications
+                  assignedCourses:
+                    - id: '251007'
+                      name: System and device programming
+                      shortcode: 01NYHOV
+                    - id: '252121'
+                      name: Web Applications II
+                      shortcode: 01TXSOV
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Profile
+    patch:
+      operationId: FacultyProfileRoutes_updateFacultyProfile
+      summary: Update faculty profile | Aggiorna profilo docente
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/FacultyProfile'
+                required:
+                  - data
+              example:
+                data:
+                  id: d123456
+                  name: Mario
+                  email: mario.rossi@polito.it
+                  phone: +39 011 090 7001
+                  residence: Corso Duca degli Abruzzi 24, Torino
+                  fiscalResidence: Corso Duca degli Abruzzi 24, Torino
+                  iban: IT60X0542811101000000123456
+                  department: DAUIN - Dipartimento di Automatica e Informatica
+                  publications: []
+                  assignedCourses: []
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FacultyProfileUpdateRequest'
+            example:
+              residence: Corso Duca degli Abruzzi 24, Torino
+              fiscalResidence: Corso Duca degli Abruzzi 24, Torino
+              phone: +39 011 090 7001
+              email: mario.rossi@polito.it
+  /faculty/messages:
+    get:
+      operationId: FacultyMessages_getMessages
+      summary: List messages | Elenca messaggi
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Message'
+                required:
+                  - data
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Profile
+  /faculty/messages/{messageId}:
+    delete:
+      operationId: FacultyMessages_deleteMessage
+      summary: Delete a message | Cancella un messaggio
+      parameters:
+        - name: messageId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Profile
+  /faculty/messages/{messageId}/read:
+    put:
+      operationId: FacultyMessages_markMessageAsRead
+      summary: Mark a message as read | Segna un messaggio come letto
+      parameters:
+        - name: messageId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Profile
+  /faculty/notifications:
+    get:
+      operationId: FacultyNotifications_getNotifications
+      summary: List notifications | Elenca notifiche
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Notification'
+                required:
+                  - data
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Profile
+  /faculty/notifications/preferences:
+    get:
+      operationId: FacultyNotifications_getNotificationPreferences
+      summary: Get notification preferences | Ottieni preferenze notifiche
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/NotificationPreferences'
+                required:
+                  - data
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Profile
+    patch:
+      operationId: FacultyNotifications_updateNotificationPreferences
+      summary: Update notification preferences | Aggiorna preferenze notifiche
+      parameters: []
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateNotificationPreferencesRequest'
+  /faculty/notifications/{notificationId}:
+    delete:
+      operationId: FacultyNotifications_deleteNotification
+      summary: Delete a notification | Cancella una notifica
+      parameters:
+        - name: notificationId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Profile
+  /faculty/notifications/{notificationId}/read:
+    put:
+      operationId: FacultyNotifications_markNotificationAsRead
+      summary: Mark a notification as read | Segna una notifica come letta
+      parameters:
+        - name: notificationId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Profile
+  /faculty/preferences:
+    patch:
+      operationId: FacultyProfileOperations_updateDevicePreferences
+      summary: Update device preferences | Aggiorna preferenze del dispositivo
+      parameters: []
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePreferencesRequest'
+  /faculty/rooms/bookings:
+    post:
+      operationId: FacultyRoomBookings_createFacultyRoomBooking
+      summary: Book a room | Prenota aula/laboratorio
+      parameters: []
+      responses:
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Prenotazione creata con successo
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Room Booking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FacultyRoomBookingRequest'
+            example:
+              date: '2024-03-15'
+              startTime: '10:00'
+              endTime: '12:00'
+              roomId: ROOM_001
+              reason: Lezione di recupero
+  /faculty/rooms/bookings/availability:
+    get:
+      operationId: FacultyRoomBookings_getFacultyRoomAvailability
+      summary: Check room availability | Verifica disponibilità aule
+      parameters:
+        - name: date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+          explode: false
+        - name: siteId
+          in: query
+          required: false
+          schema:
+            type: string
+          explode: false
+        - name: features
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FacultyRoomAvailability'
+                required:
+                  - data
+              example:
+                data:
+                  - roomId: ROOM_001
+                    name: Aula 1P
+                    siteId: TO_CIT
+                    capacity: 100
+                    slots:
+                      - startTime: '08:00'
+                        endTime: '10:00'
+                      - startTime: '14:00'
+                        endTime: '16:00'
+                      - startTime: '16:00'
+                        endTime: '18:00'
+                  - roomId: ROOM_002
+                    name: Aula 2T
+                    siteId: TO_CIT
+                    capacity: 150
+                    slots:
+                      - startTime: '10:00'
+                        endTime: '12:00'
+                      - startTime: '14:00'
+                        endTime: '18:00'
+                  - roomId: LAB_001
+                    name: Laboratorio Informatica 1
+                    siteId: TO_CIT
+                    capacity: 40
+                    slots:
+                      - startTime: '08:00'
+                        endTime: '12:00'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Room Booking
+  /faculty/signing/documents:
+    get:
+      operationId: FacultyDigitalSignature_listFacultySignableDocuments
+      summary: List documents to sign | Elenco documenti da firmare
+      parameters:
+        - name: status
+          in: query
+          required: false
+          description: Filtra per stato del documento.
+          schema:
+            $ref: '#/components/schemas/FacultySignableDocumentStatus'
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FacultySignableDocument'
+                required:
+                  - data
+              example:
+                data:
+                  - id: doc_001
+                    title: Verbale esame - Analisi Matematica I - Appello 15/01/2024
+                    status: pending
+                    createdAt: '2024-01-16T10:00:00Z'
+                    expiresAt: '2024-01-23T23:59:59Z'
+                  - id: doc_002
+                    title: Verbale esame - Fisica I - Appello 18/01/2024
+                    status: pending
+                    createdAt: '2024-01-19T14:30:00Z'
+                    expiresAt: '2024-01-26T23:59:59Z'
+                  - id: doc_003
+                    title: Verbale esame - Chimica - Appello 10/01/2024
+                    status: signed
+                    createdAt: '2024-01-11T09:00:00Z'
+                    expiresAt: null
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Digital Signature
+  /faculty/signing/documents/{documentId}/sign:
+    post:
+      operationId: FacultyDigitalSignature_signFacultyDocument
+      summary: Start digital signature | Avvia firma digitale
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/FacultySignDocumentResponse'
+                required:
+                  - data
+              example:
+                data:
+                  redirectUrl: https://firma.infocert.it/sign/abc123def456
+                  status: pending
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Digital Signature
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FacultySignDocumentRequest'
+  /faculty/unreadEmails:
+    get:
+      operationId: FacultyProfileOperations_getUnreadEmailsNumber
+      summary: Retrieve unread emails number | Recupera il numero di email non lette
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/EmailBadge'
+                required:
+                  - data
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      tags:
+        - Faculty - Profile
   /grades:
     get:
       operationId: StudentNs_getStudentGrades
@@ -1697,7 +3908,7 @@ paths:
         - Student
   /guides:
     get:
-      operationId: StudentNs_getGuides
+      operationId: StudentProfileOperations_getGuides
       summary: Get guides | Mostra guide
       parameters: []
       responses:
@@ -3033,7 +5244,7 @@ paths:
         - People
   /preferences:
     patch:
-      operationId: StudentNs_updateDevicePreferences
+      operationId: StudentProfileOperations_updateDevicePreferences
       summary: Update device preferences | Aggiorna preferenze del dispositivo
       parameters: []
       responses:
@@ -3547,8 +5758,8 @@ paths:
         - Tickets
   /unreadEmails:
     get:
-      operationId: StudentNs_getUnreadEmailsNumber
-      summary: Retrieve student's unread emails number | Recupera il numero di email non lette dello studente
+      operationId: StudentProfileOperations_getUnreadEmailsNumber
+      summary: Retrieve unread emails number | Recupera il numero di email non lette
       parameters: []
       responses:
         '200':
@@ -4156,6 +6367,13 @@ components:
           type: string
       allOf:
         - $ref: '#/components/schemas/PlaceRef'
+    BookingPhysicalPlaceRefUpdate:
+      type: object
+      properties:
+        description:
+          type: string
+      allOf:
+        - $ref: '#/components/schemas/PlaceRefUpdate'
     BookingPlaceRef:
       type: object
       oneOf:
@@ -5388,6 +7606,900 @@ components:
           type: boolean
           description: Defines whether the credits from the exam count toward the total required for graduation
           example: true
+    FacultyAddExamEnrollmentRequest:
+      type: object
+      required:
+        - personId
+      properties:
+        personId:
+          type: string
+          example: s123456
+        note:
+          type: string
+          nullable: true
+          example: Studente fuori corso
+    FacultyAssignedCourse:
+      type: object
+      required:
+        - id
+        - name
+        - shortcode
+      properties:
+        id:
+          type: string
+          example: '251007'
+        name:
+          type: string
+          example: System and device programming
+        shortcode:
+          type: string
+          example: 01NYHOV
+    FacultyAssignmentSubmission:
+      type: object
+      required:
+        - id
+        - title
+        - publishedAt
+        - submittedBy
+      properties:
+        id:
+          type: string
+          example: asn_001
+        title:
+          type: string
+          example: Laboratorio 3
+        publishedAt:
+          type: string
+          format: date-time
+          example: '2024-03-15T14:00:00Z'
+        submittedBy:
+          type: string
+          example: s123456
+    FacultyBooking:
+      type: object
+      required:
+        - id
+        - date
+        - startTime
+        - endTime
+        - status
+      properties:
+        id:
+          type: string
+          example: booking_001
+        roomId:
+          type: string
+          example: ROOM_001
+        roomName:
+          type: string
+          example: Aula 1P
+        date:
+          type: string
+          format: date
+          example: '2024-03-15'
+        startTime:
+          type: string
+          example: '10:00'
+        endTime:
+          type: string
+          example: '12:00'
+        reason:
+          type: string
+          example: Lezione di recupero
+        status:
+          type: string
+          example: confirmed
+    FacultyCalendar:
+      type: object
+      required:
+        - name
+        - supportsEventCreation
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+          example: Calendario didattico
+        description:
+          type: string
+          example: Eventi legati ai corsi e alle attività accademiche.
+        color:
+          type: string
+          example: '#FF5733'
+        supportsEventCreation:
+          type: boolean
+          example: true
+        defaultVisible:
+          type: boolean
+          example: false
+    FacultyCalendarDetail:
+      type: object
+      required:
+        - calendar
+        - events
+      properties:
+        calendar:
+          $ref: '#/components/schemas/FacultyCalendar'
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/FacultyCalendarEvent'
+    FacultyCalendarEvent:
+      type: object
+      required:
+        - calendarId
+        - title
+        - type
+        - startDate
+        - endDate
+        - allDay
+        - place
+        - isLive
+      properties:
+        id:
+          type: string
+          example: evt_12345
+        calendarId:
+          type: string
+          example: teaching
+        title:
+          type: string
+          example: Brainstorming for new Activities
+        type:
+          $ref: '#/components/schemas/FacultyCalendarEventTypeEnum'
+        startDate:
+          type: string
+          format: date-time
+          example: '2023-12-18T14:00:00.000Z'
+        endDate:
+          type: string
+          format: date-time
+          example: '2023-12-18T15:30:00.000Z'
+        allDay:
+          type: boolean
+          example: true
+        place:
+          $ref: '#/components/schemas/PlaceRef'
+        externalLocation:
+          type: string
+          example: Sala riunioni Dipartimento DAUIN
+        isLive:
+          type: boolean
+          example: false
+        materials:
+          type: array
+          items:
+            $ref: '#/components/schemas/FacultyCalendarEventMaterial'
+        notes:
+          type: string
+          example: Portare il materiale per il laboratorio.
+    FacultyCalendarEventMaterial:
+      type: object
+      required:
+        - name
+        - url
+        - type
+      properties:
+        id:
+          type: string
+          example: MAT-2023-001
+        name:
+          type: string
+          example: Slides Introduzione
+        url:
+          type: string
+          example: https://didattica.polito.it/materials/intro.pdf
+        type:
+          allOf:
+            - $ref: '#/components/schemas/FacultyCalendarMaterialType'
+          example: file
+    FacultyCalendarEventTypeEnum:
+      type: string
+      enum:
+        - LECTURE
+        - MEETING
+        - OFFICE_HOUR
+        - OTHER
+    FacultyCalendarEventUpsertRequest:
+      type: object
+      required:
+        - title
+        - type
+        - startsAt
+        - endsAt
+        - allDay
+        - placeId
+        - materialIds
+      properties:
+        title:
+          type: string
+          example: Brainstorming for new Activities
+        type:
+          $ref: '#/components/schemas/FacultyCalendarEventTypeEnum'
+        startsAt:
+          type: string
+          format: date-time
+          example: '2023-12-18T16:00:00.000Z'
+        endsAt:
+          type: string
+          format: date-time
+          example: '2023-12-18T17:30:00.000Z'
+        allDay:
+          type: boolean
+          example: true
+        placeId:
+          type: string
+          example: ROOM_002
+        externalLocation:
+          type: string
+          example: Sala riunioni Dipartimento DAUIN
+        notes:
+          type: string
+          example: Preparare i materiali introduttivi.
+        materialIds:
+          type: array
+          items:
+            type: string
+        videoConferenceUrl:
+          type: string
+          example: https://polito.webex.com/meet/docente
+    FacultyCalendarMaterialType:
+      type: string
+      enum:
+        - file
+        - link
+    FacultyCollaborator:
+      type: object
+      required:
+        - personId
+        - name
+        - role
+        - permissions
+      properties:
+        personId:
+          type: string
+          example: p002
+        name:
+          type: string
+          example: Luigi Verdi
+        role:
+          type: string
+          example: Collaborator
+        courses:
+          type: array
+          items:
+            type: string
+        permissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/FacultyCollaboratorPermission'
+    FacultyCollaboratorPermission:
+      type: string
+      enum:
+        - CAN_READ
+        - CAN_EDIT
+        - CAN_DELETE
+    FacultyCollaboratorPermissionsRequest:
+      type: object
+      properties:
+        personId:
+          type: string
+        permissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/FacultyCollaboratorPermission'
+    FacultyCollaboratorUpsertRequest:
+      type: object
+      required:
+        - personId
+        - permissions
+      properties:
+        personId:
+          type: string
+        role:
+          type: string
+        permissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/FacultyCollaboratorPermission'
+    FacultyCourseEdition:
+      type: object
+      required:
+        - year
+        - id
+      properties:
+        year:
+          type: string
+          example: '2024'
+        id:
+          type: integer
+          example: 251007
+    FacultyCourseOverview:
+      type: object
+      required:
+        - id
+        - name
+        - shortcode
+        - cfu
+      properties:
+        id:
+          type: integer
+          example: 251007
+        name:
+          type: string
+          example: System and device programming
+        shortcode:
+          type: string
+          example: 01NYHOV
+        cfu:
+          type: integer
+          example: 10
+        teachingPeriod:
+          type: string
+          example: 2-2
+        teacherId:
+          type: integer
+          nullable: true
+          example: 2893
+        previousEditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/FacultyCourseEdition'
+        isModule:
+          type: boolean
+          example: false
+        year:
+          type: string
+          example: '2025'
+        moodleCourses:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              id:
+                type: string
+          nullable: true
+    FacultyCourseStudent:
+      type: object
+      required:
+        - id
+        - firstName
+        - lastName
+        - username
+      properties:
+        id:
+          type: string
+          example: s123456
+        firstName:
+          type: string
+          example: Mario
+        lastName:
+          type: string
+          example: Rossi
+        username:
+          type: string
+          example: s123456
+        picture:
+          type: object
+          properties:
+            url:
+              type: string
+              format: uri
+          required:
+            - url
+    FacultyEventBookingRequest:
+      type: object
+      required:
+        - startDateTime
+        - endDateTime
+        - expectedParticipants
+        - location
+        - reason
+      properties:
+        startDateTime:
+          type: string
+          format: date-time
+          example: '2024-03-15T10:00:00Z'
+        endDateTime:
+          type: string
+          format: date-time
+          example: '2024-03-15T12:00:00Z'
+        expectedParticipants:
+          type: integer
+          example: 50
+        location:
+          type: string
+          example: Aula Magna - Politecnico
+        reason:
+          type: string
+          example: Workshop su Intelligenza Artificiale
+    FacultyExam:
+      type: object
+      required:
+        - id
+        - courseId
+        - courseName
+        - date
+        - enrolledCount
+        - enrolled
+      properties:
+        id:
+          type: string
+          example: exam_001
+        courseId:
+          type: string
+          example: '251007'
+        courseName:
+          type: string
+          example: System and device programming
+        date:
+          type: string
+          format: date
+          example: '2024-02-15'
+        room:
+          type: string
+          nullable: true
+          example: Aula 1P
+        enrolledCount:
+          type: integer
+          example: 45
+        enrolled:
+          type: array
+          items:
+            $ref: '#/components/schemas/FacultyExamEnrollment'
+    FacultyExamEnrollment:
+      type: object
+      required:
+        - personId
+        - name
+      properties:
+        personId:
+          type: string
+          example: s123456
+        name:
+          type: string
+          example: Mario Rossi
+        degree:
+          type: string
+          nullable: true
+          example: Ingegneria Informatica
+        email:
+          type: string
+          nullable: true
+          example: mario.rossi@studenti.polito.it
+        note:
+          type: string
+          nullable: true
+          example: Studente lavoratore
+    FacultyExamNotificationRequest:
+      type: object
+      required:
+        - subject
+        - message
+      properties:
+        subject:
+          type: string
+          minLength: 3
+          example: Comunicazione appello
+        message:
+          type: string
+          minLength: 1
+          example: Si comunica che l'appello si svolgerà in Aula 1P.
+        channels:
+          type: array
+          items:
+            type: string
+            enum:
+              - push
+              - email
+          description: Canali di notifica da utilizzare.
+    FacultyExamSummary:
+      type: object
+      required:
+        - id
+        - courseId
+        - courseName
+        - date
+        - enrolledCount
+      properties:
+        id:
+          type: string
+          example: exam_001
+        courseId:
+          type: string
+          example: '251007'
+        courseName:
+          type: string
+          example: System and device programming
+        date:
+          type: string
+          format: date
+          example: '2024-02-15'
+        room:
+          type: string
+          nullable: true
+          example: Aula 1P
+        enrolledCount:
+          type: integer
+          example: 45
+    FacultyLecture:
+      type: object
+      required:
+        - id
+        - courseId
+        - title
+        - type
+        - startsAt
+        - endsAt
+        - staff
+      properties:
+        id:
+          type: string
+          example: lec_001
+        courseId:
+          type: string
+          example: '251007'
+        title:
+          type: string
+          example: Lezione 1 - Introduzione
+        type:
+          type: string
+          example: LECTURE
+        startsAt:
+          type: string
+          format: date-time
+          example: '2024-03-15T10:00:00Z'
+        endsAt:
+          type: string
+          format: date-time
+          example: '2024-03-15T12:00:00Z'
+        topic:
+          type: string
+          nullable: true
+        language:
+          type: string
+          nullable: true
+        room:
+          $ref: '#/components/schemas/PlaceRef'
+        staff:
+          type: array
+          items:
+            $ref: '#/components/schemas/FacultyLectureStaffMember'
+    FacultyLectureCreateRequest:
+      type: object
+      required:
+        - title
+        - type
+        - startsAt
+        - endsAt
+        - staff
+      properties:
+        title:
+          type: string
+        type:
+          type: string
+        startsAt:
+          type: string
+          format: date-time
+        endsAt:
+          type: string
+          format: date-time
+        topic:
+          type: string
+          nullable: true
+        language:
+          type: string
+          nullable: true
+        room:
+          $ref: '#/components/schemas/PlaceRef'
+        staff:
+          type: array
+          items:
+            $ref: '#/components/schemas/FacultyLectureStaffMemberRequest'
+    FacultyLectureStaffMember:
+      type: object
+      required:
+        - personId
+        - name
+        - role
+      properties:
+        personId:
+          type: string
+          example: p001
+        name:
+          type: string
+          example: Mario Rossi
+        role:
+          allOf:
+            - $ref: '#/components/schemas/FacultyLectureStaffRole'
+          example: OWNER
+    FacultyLectureStaffMemberRequest:
+      type: object
+      required:
+        - personId
+        - role
+      properties:
+        personId:
+          type: string
+        role:
+          $ref: '#/components/schemas/FacultyLectureStaffRole'
+    FacultyLectureStaffRole:
+      type: string
+      enum:
+        - OWNER
+        - COLLABORATOR
+    FacultyLectureUpdateRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        type:
+          type: string
+        startsAt:
+          type: string
+          format: date-time
+        endsAt:
+          type: string
+          format: date-time
+        topic:
+          type: string
+          nullable: true
+        language:
+          type: string
+          nullable: true
+        room:
+          $ref: '#/components/schemas/PlaceRefUpdate'
+        staff:
+          type: array
+          items:
+            $ref: '#/components/schemas/FacultyLectureStaffMemberRequest'
+    FacultyPaginatedCalendarEventList:
+      type: object
+      required:
+        - data
+        - page
+        - pageSize
+        - total
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/FacultyCalendarEvent'
+        page:
+          type: integer
+          example: 1
+        pageSize:
+          type: integer
+          example: 20
+        total:
+          type: integer
+          example: 100
+    FacultyPaginatedExamList:
+      type: object
+      required:
+        - data
+        - page
+        - pageSize
+        - total
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/FacultyExamSummary'
+        page:
+          type: integer
+          example: 1
+        pageSize:
+          type: integer
+          example: 20
+        total:
+          type: integer
+          example: 100
+    FacultyPaginatedLectureList:
+      type: object
+      required:
+        - data
+        - page
+        - pageSize
+        - total
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/FacultyLecture'
+        page:
+          type: integer
+          example: 1
+        pageSize:
+          type: integer
+          example: 20
+        total:
+          type: integer
+          example: 100
+    FacultyProfile:
+      type: object
+      required:
+        - id
+        - name
+        - email
+      properties:
+        id:
+          type: string
+          example: d123456
+        name:
+          type: string
+          example: Mario
+        email:
+          type: string
+          example: mario.rossi@polito.it
+        phone:
+          type: string
+          example: +39 011 090 7000
+        residence:
+          type: string
+          example: Via Roma 10, Torino
+        fiscalResidence:
+          type: string
+          example: Via Roma 10, Torino
+        iban:
+          type: string
+          example: IT60X0542811101000000123456
+        department:
+          type: string
+          nullable: true
+          example: DAUIN - Dipartimento di Automatica e Informatica
+        publications:
+          type: array
+          items:
+            $ref: '#/components/schemas/FacultyPublication'
+        assignedCourses:
+          type: array
+          items:
+            $ref: '#/components/schemas/FacultyAssignedCourse'
+    FacultyProfileUpdateRequest:
+      type: object
+      properties:
+        residence:
+          type: string
+        fiscalResidence:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+    FacultyPublication:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+          example: pub_001
+        name:
+          type: string
+          example: Advanced Topics in Distributed Systems
+    FacultyRoomAvailability:
+      type: object
+      required:
+        - roomId
+        - name
+        - siteId
+        - capacity
+        - slots
+      properties:
+        roomId:
+          type: string
+          example: ROOM_001
+        name:
+          type: string
+          example: Aula 1P
+        siteId:
+          type: string
+          example: TO_CIT
+        capacity:
+          type: integer
+          example: 100
+        slots:
+          type: array
+          items:
+            $ref: '#/components/schemas/FacultyRoomSlot'
+    FacultyRoomBookingRequest:
+      type: object
+      required:
+        - date
+        - startTime
+        - endTime
+        - roomId
+      properties:
+        date:
+          type: string
+          format: date
+          example: '2024-03-15'
+        startTime:
+          type: string
+          pattern: ^\d{2}:\d{2}$
+          description: Formato HH:mm
+          example: '10:00'
+        endTime:
+          type: string
+          pattern: ^\d{2}:\d{2}$
+          description: Formato HH:mm
+          example: '12:00'
+        roomId:
+          type: string
+          example: ROOM_001
+        reason:
+          type: string
+          example: Lezione di recupero
+    FacultyRoomSlot:
+      type: object
+      required:
+        - startTime
+        - endTime
+      properties:
+        startTime:
+          type: string
+          example: '10:00'
+        endTime:
+          type: string
+          example: '12:00'
+    FacultySignDocumentRequest:
+      type: object
+      properties:
+        otp:
+          type: string
+          nullable: true
+          example: '123456'
+    FacultySignDocumentResponse:
+      type: object
+      required:
+        - status
+      properties:
+        redirectUrl:
+          type: string
+          format: uri
+          nullable: true
+          description: URL di redirezione al provider di firma (es. InfoCert).
+          example: https://firma.infocert.it/sign/abc123
+        status:
+          type: string
+          description: Stato della richiesta di firma.
+          example: pending
+    FacultySignableDocument:
+      type: object
+      required:
+        - id
+        - title
+        - status
+      properties:
+        id:
+          type: string
+          example: doc_001
+        title:
+          type: string
+          example: Verbale esame - Analisi Matematica I
+        status:
+          allOf:
+            - $ref: '#/components/schemas/FacultySignableDocumentStatus'
+          example: pending
+        createdAt:
+          type: string
+          format: date-time
+          example: '2024-03-15T10:00:00Z'
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+          example: '2024-03-20T23:59:59Z'
+    FacultySignableDocumentStatus:
+      type: string
+      enum:
+        - pending
+        - signed
+        - rejected
     FcmRegistrationRequest:
       type: object
       properties:
@@ -5765,29 +8877,29 @@ components:
       properties:
         id:
           type: number
-          example: 123
+          example: 63775600
         title:
           type: string
-          example: Nuovo avviso da System and device programming
+          example: Nuovo messaggio dalla Segreteria Studenti
         message:
           type: string
           nullable: true
-          example: Ricordati di...
+          example: Puoi venire a ritirare la tua smartcard
         type:
           allOf:
             - $ref: '#/components/schemas/MessageType'
-          example: teacher
+          example: secretariat
         senderId:
           type: number
           nullable: true
-          example: 2893
+          example: 150157
         sentAt:
           type: string
           format: date-time
-          example: '2022-08-31T14:00:00Z'
+          example: '2021-10-05T10:00:00Z'
         isRead:
           type: boolean
-          example: false
+          example: true
     MessageType:
       type: string
       enum:
@@ -5977,14 +9089,14 @@ components:
       properties:
         id:
           type: number
-          example: 123
+          example: 63775600
         title:
           type: string
-          example: Nuovo avviso da System and device programming
+          example: Nuovo materiale nel corso di Fisica
         message:
           type: string
           nullable: true
-          example: Ricordati di...
+          example: Nuovo file presentazione.pdf aggiunto al materiale del corso di Fisica
         scope:
           type: array
           items:
@@ -5997,10 +9109,10 @@ components:
         sentAt:
           type: string
           format: date-time
-          example: '2022-08-31T14:00:00Z'
+          example: '2021-10-05T10:00:00Z'
         isRead:
           type: boolean
-          example: false
+          example: true
     NotificationPreferences:
       type: object
       required:
@@ -6505,6 +9617,19 @@ components:
         - roomId
         - siteId
         - name
+      properties:
+        buildingId:
+          type: string
+        floorId:
+          type: string
+        roomId:
+          type: string
+        siteId:
+          type: string
+        name:
+          type: string
+    PlaceRefUpdate:
+      type: object
       properties:
         buildingId:
           type: string

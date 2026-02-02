@@ -1,27 +1,12 @@
 import "@typespec/http";
 import "@typespec/openapi3";
 
-import "../common.tsp";
-import "../examples/student.tsp";
+import "../../common.tsp";
+import "../../examples/student.tsp";
 
 using Http;
 
 namespace PolitoAPI;
-
-model Deadline {
-  id?: numeric;
-
-  @example("Termine per l'iscrizione e pagamento della prima rata")
-  name: string;
-
-  @example("Iscrizioni e pagamento tasse")
-  type: string;
-
-  url: string | null;
-
-  @example(plainDate.fromISO("2022-10-11"))
-  date: plainDate;
-}
 
 model ProvisionalGrade {
   @example(654632)
@@ -117,117 +102,6 @@ model ExamGrade {
   creditsCountTowardsDegree: boolean;
 }
 
-model EmailBadge {
-  @example("99+")
-  unreadEmails: string;
-}
-
-@example(MessageType.secretariat)
-enum MessageType {
-  emergency,
-  event,
-  personal,
-  teacher,
-  secretariat,
-  exams,
-  mfa,
-}
-
-model Message {
-  @example(123)
-  id: numeric;
-
-  @example("Nuovo avviso da System and device programming")
-  title: string;
-
-  @example("Ricordati di...")
-  message: string | null;
-
-  @example(MessageType.teacher)
-  type: MessageType;
-
-  @example(2893)
-  senderId: numeric | null;
-
-  @example(utcDateTime.fromISO("2022-08-31T14:00:00Z"))
-  sentAt: utcDateTime;
-
-  @example(false)
-  isRead: boolean;
-}
-
-model Notification {
-  @example(123)
-  id: numeric;
-
-  @example("Nuovo avviso da System and device programming")
-  title: string;
-
-  @example("Ricordati di...")
-  message: string | null;
-
-  /** An array representing the hierarchical path to the object this notification is related to (replicates the navigation/modules structure) */
-  @example(#["courses", "258674", "notices"])
-  scope?: string[];
-
-  @example(utcDateTime.fromISO("2022-08-31T14:00:00Z"))
-  sentAt: utcDateTime;
-
-  @example(false)
-  isRead: boolean;
-}
-
-model NotificationPreferences {
-  @example(true)
-  notices: boolean;
-
-  @example(true)
-  files: boolean;
-
-  @example(true)
-  lectures: boolean;
-
-  @example(true)
-  bookings: boolean;
-
-  @example(true)
-  tickets: boolean;
-}
-
-model UpdateNotificationPreferencesRequest {
-  data: {
-    @example(true)
-    notices?: boolean;
-
-    @example(true)
-    files?: boolean;
-
-    @example(true)
-    lectures?: boolean;
-
-    @example(true)
-    bookings?: boolean;
-
-    @example(true)
-    tickets?: boolean;
-  };
-}
-
-model GuideField {
-  label: string;
-  value: string;
-  isCopyEnabled?: boolean;
-}
-
-model Guide {
-  id: string;
-  listTitle: string;
-  title: string;
-  intro: string;
-  fields: GuideField[];
-  sections: GuideSection[];
-}
-
 model Student {
   @example("s290683")
   username: string;
@@ -310,92 +184,10 @@ interface StudentNs {
   @summary("Retrieve student profile | Recupera il profilo studente")
   getStudent(): OkDataResponse<Student> | BaseErrors;
 
-  @route("/deadlines")
-  @get
-  @summary("List deadlines | Elenca scadenze")
-  @opExample(_ex_getDeadlines_resp)
-  getDeadlines(
-    /** First day - defaults to 7 days before today */
-    @query fromDate?: plainDate,
-
-    /** Last day - defaults to 7 days after today */
-    @query toDate?: plainDate,
-  ): OkDataResponse<Deadline[]> | BaseErrors;
-
   @route("/grades")
   @get
   @summary("Retrieve student grades | Recupera i voti dello studente")
   getStudentGrades(): OkDataResponse<ExamGrade[]> | BaseErrors;
-
-  @route("/unreadEmails")
-  @get
-  @summary("Retrieve student's unread emails number | Recupera il numero di email non lette dello studente")
-  getUnreadEmailsNumber(): OkDataResponse<EmailBadge> | BaseErrors;
-
-  @route("/preferences")
-  @patch(#{ implicitOptionality: true })
-  @summary("Update device preferences | Aggiorna preferenze del dispositivo")
-  updateDevicePreferences(
-    @body body: UpdatePreferencesRequest,
-  ): NoContentResponse | BaseErrors;
-
-  @route("/guides")
-  @get
-  @summary("Get guides | Mostra guide")
-  getGuides(): OkDataResponse<Guide[]> | BaseErrors;
-}
-
-@tag("Student")
-@route("/messages")
-interface Messages {
-  @get
-  @summary("List messages | Elenca messaggi")
-  getMessages(): OkDataResponse<Message[]> | BaseErrors;
-
-  @route("/{messageId}")
-  @delete
-  @summary("Delete a message | Cancella un messaggio")
-  deleteMessage(@path messageId: integer): NoContentResponse | BaseErrors;
-
-  @route("/{messageId}/read")
-  @put
-  @summary("Mark a message as read | Segna un messaggio come letto")
-  markMessageAsRead(@path messageId: integer): NoContentResponse | BaseErrors;
-}
-
-@tag("Student")
-@route("/notifications")
-interface Notifications {
-  @get
-  @summary("List notifications | Elenca notifiche")
-  getNotifications(): OkDataResponse<Notification[]> | BaseErrors;
-
-  @route("/preferences")
-  @get
-  @summary("Get notification preferences | Ottieni preferenze notifiche")
-  getNotificationPreferences(
-  ): OkDataResponse<NotificationPreferences> | BaseErrors;
-
-  @route("/preferences")
-  @patch(#{ implicitOptionality: true })
-  @summary("Update notification preferences | Aggiorna preferenze notifiche")
-  updateNotificationPreferences(
-    @body body: UpdateNotificationPreferencesRequest,
-  ): NoContentResponse | BaseErrors;
-
-  @route("/{notificationId}")
-  @delete
-  @summary("Delete a notification | Cancella una notifica")
-  deleteNotification(
-    @path notificationId: integer,
-  ): NoContentResponse | BaseErrors;
-
-  @route("/{notificationId}/read")
-  @put
-  @summary("Mark a notification as read | Segna una notifica come letta")
-  markNotificationAsRead(
-    @path notificationId: integer,
-  ): NoContentResponse | BaseErrors;
 }
 
 @tag("Student")

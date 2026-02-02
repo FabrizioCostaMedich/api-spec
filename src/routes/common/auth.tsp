@@ -1,8 +1,8 @@
 import "@typespec/http";
 import "@typespec/openapi3";
 
-import "../common.tsp";
-import "../examples/auth.tsp";
+import "../../common.tsp";
+import "../../examples/auth.tsp";
 
 using Http;
 using OpenAPI;
@@ -93,15 +93,6 @@ union LoginRequest {
   sso: LoginCredentialsSSO,
 }
 
-@example(_ex_switchCareer_req)
-model SwitchCareerRequest {
-  @example("s290683")
-  username: string;
-
-  client?: Client;
-  device?: Device;
-}
-
 @example(_ex_validateMfa_req)
 model ValidateMfaRequest {
   @example("EDUP000123456")
@@ -169,13 +160,6 @@ interface Auth {
   @summary("Login")
   @useAuth(NoAuth)
   login(@body body: LoginRequest): OkDataResponse<Identity> | BaseErrors;
-
-  @post
-  @route("/switch-career")
-  @summary("Switch career | Cambia carriera")
-  switchCareer(
-    @body body: SwitchCareerRequest,
-  ): OkDataResponse<Identity> | BaseErrors;
 
   /** Invalidates the provided token */
   @delete

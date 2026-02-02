@@ -112,6 +112,19 @@ alias OkDataCreatedResponse<T> = CreatedResponse<{
   data: T;
 }>;
 
+alias AcceptedResponse = {
+  @statusCode statusCode: 202;
+};
+
+alias Conflict = {
+  @statusCode statusCode: 409;
+  @body body: ErrorResponse;
+};
+
+alias CreatedAckResponse = CreatedResponse<{
+  message?: string;
+}>;
+
 alias BaseErrors = BadRequest | ServerError;
 
 model EscError {

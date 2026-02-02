@@ -4,22 +4,30 @@ import "@typespec/openapi3";
 
 import "./common.tsp";
 
-import "./routes/auth.tsp";
-import "./routes/student.tsp";
-import "./routes/bookings.tsp";
-import "./routes/courses.tsp";
-import "./routes/exams.tsp";
-import "./routes/esc.tsp";
-import "./routes/news.tsp";
-import "./routes/people.tsp";
-import "./routes/places.tsp";
-import "./routes/tickets.tsp";
-import "./routes/job-offers.tsp";
-import "./routes/offering.tsp";
-import "./routes/surveys.tsp";
+import "./routes/common/auth.tsp";
+import "./routes/common/bookings.tsp";
+import "./routes/common/courses.tsp";
+import "./routes/common/news.tsp";
+import "./routes/common/people.tsp";
+import "./routes/common/places.tsp";
+
+import "./routes/student/auth.tsp";
+import "./routes/student/lectures.tsp";
+import "./routes/student/profile.tsp";
+import "./routes/student/student.tsp";
+import "./routes/student/exams.tsp";
+import "./routes/student/esc.tsp";
+import "./routes/student/tickets.tsp";
+import "./routes/student/job-offers.tsp";
+import "./routes/student/offering.tsp";
+import "./routes/student/surveys.tsp";
+
 import "./routes/faculty/calendar.tsp";
 import "./routes/faculty/courses.tsp";
 import "./routes/faculty/digital-signature.tsp";
+import "./routes/faculty/profile.tsp";
+import "./routes/faculty/exams.tsp";
+import "./routes/faculty/bookings.tsp";
 
 import "./version.tsp";
 
