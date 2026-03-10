@@ -65,6 +65,7 @@ model GuideSection {
 enum AnnouncementScope {
   onboarding,
   appInfo,
+  test,
 }
 
 /* UTILS */
